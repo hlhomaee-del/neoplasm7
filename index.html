@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ICD-10-CM Neoplasm Coding Quiz</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #ffffff; --bg2: #f5f4f0; --bg3: #eeede8;
+    --text: #1a1a18; --text2: #5f5e5a; --text3: #888780;
+    --border: rgba(0,0,0,0.12); --border2: rgba(0,0,0,0.22);
+    --radius-md: 8px; --radius-lg: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1e1e1c; --bg2: #2a2a27; --bg3: #343430;
+      --text: #f0efe8; --text2: #a0a09a; --text3: #5f5e5a;
+      --border: rgba(255,255,255,0.12); --border2: rgba(255,255,255,0.22);
+    }
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg3); color: var(--text); min-height: 100vh; padding: 2rem 1rem 4rem; display: flex; justify-content: center; }
+  .container { width: 100%; max-width: 680px; }
+  .hdr { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; gap: 12px; }
+  h1 { font-size: 20px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+  .sub { font-size: 13px; color: var(--text2); }
+  .badges { display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+  .badge { font-size: 12px; font-weight: 500; padding: 4px 12px; border-radius: 99px; }
+  .badge-streak { background: #EEEDFE; color: #3C3489; }
+  .badge-score { background: #E1F5EE; color: #085041; }
+
+  .ref-toggle { background: none; border: 0.5px solid var(--border2); border-radius: var(--radius-md); padding: 6px 14px; font-size: 13px; color: var(--text2); cursor: pointer; margin-bottom: 1rem; font-family: inherit; transition: background 0.15s; }
+  .ref-toggle:hover { background: var(--bg2); }
+  .ref-section { display: none; margin-bottom: 1.25rem; border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow-x: auto; }
+  .ref-section.open { display: block; animation: fbin 0.2s ease; }
+  table.ref { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 520px; }
+  table.ref th { background: var(--bg2); color: var(--text2); font-weight: 500; padding: 8px 12px; text-align: left; border-bottom: 0.5px solid var(--border); }
+  table.ref td { padding: 8px 12px; color: var(--text); border-bottom: 0.5px solid var(--border); vertical-align: top; line-height: 1.55; }
+  table.ref tr:last-child td { border-bottom: none; }
+  .cp { display: inline-block; font-family: monospace; font-size: 12px; font-weight: 500; padding: 2px 7px; border-radius: 4px; }
+  .cp-pu { background: #EEEDFE; color: #3C3489; }
+  .cp-pk { background: #FBEAF0; color: #72243E; }
+  .cp-tl { background: #E1F5EE; color: #085041; }
+  .cp-am { background: #FAEEDA; color: #633806; }
+  .cp-co { background: #FAECE7; color: #712B13; }
+  .cp-bl { background: #E6F1FB; color: #0C447C; }
+
+  .prog-bar { height: 5px; background: var(--bg2); border-radius: 99px; overflow: hidden; margin-bottom: 1.25rem; }
+  .prog-fill { height: 100%; border-radius: 99px; background: #7F77DD; transition: width 0.4s ease; }
+
+  .q-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
+  .q-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .q-num { font-size: 11px; font-weight: 500; color: var(--text2); letter-spacing: 0.07em; text-transform: uppercase; }
+  .q-diff { font-size: 11px; font-weight: 500; padding: 2px 9px; border-radius: 99px; }
+  .diff-hard { background: #FCEBEB; color: #791F1F; }
+  .diff-med { background: #FAEEDA; color: #633806; }
+  .diff-easy { background: #EAF3DE; color: #27500A; }
+  .q-scenario { background: var(--bg2); border-radius: var(--radius-md); padding: 0.85rem 1rem; margin-bottom: 0.85rem; border-left: 3px solid #7F77DD; font-size: 14px; color: var(--text2); line-height: 1.75; }
+  .q-text { font-size: 15px; color: var(--text); line-height: 1.65; font-weight: 500; }
+
+  .opts { display: grid; gap: 8px; margin-bottom: 1rem; }
+  .opt { background: var(--bg); border: 0.5px solid var(--border2); border-radius: var(--radius-md); padding: 0.7rem 1rem; text-align: left; font-size: 14px; color: var(--text); cursor: pointer; display: flex; align-items: flex-start; gap: 10px; font-family: inherit; transition: all 0.13s; line-height: 1.55; }
+  .opt:hover:not(.disabled) { background: var(--bg2); transform: translateY(-1px); }
+  .opt.correct { background: #EAF3DE; border-color: #639922; color: #173404; }
+  .opt.wrong { background: #FCEBEB; border-color: #A32D2D; color: #501313; }
+  .opt.disabled { cursor: default; pointer-events: none; }
+  .opt-key { width: 26px; height: 26px; border-radius: 50%; background: var(--bg2); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; flex-shrink: 0; color: var(--text); }
+  .opt.correct .opt-key { background: #639922; color: white; }
+  .opt.wrong .opt-key { background: #A32D2D; color: white; }
+
+  .fb { display: none; border-radius: var(--radius-md); padding: 1rem 1.25rem; margin-bottom: 1rem; font-size: 13px; line-height: 1.8; color: var(--text2); border-left: 3px solid; }
+  .fb.show { display: block; animation: fbin 0.25s ease; }
+  .fb-correct { background: #EAF3DE; border-color: #639922; }
+  .fb-wrong { background: #FCEBEB; border-color: #A32D2D; }
+  @keyframes fbin { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+  .nav-row { display: flex; justify-content: space-between; align-items: center; }
+  .scr-tag { font-size: 13px; color: var(--text2); font-weight: 500; }
+  .nxt { background: #7F77DD; color: white; border: none; border-radius: var(--radius-md); padding: 0.55rem 1.4rem; font-size: 14px; cursor: pointer; font-weight: 500; display: none; font-family: inherit; transition: opacity 0.15s; }
+  .nxt:hover { opacity: 0.85; }
+  .nxt.show { display: block; animation: popin 0.18s ease; }
+  @keyframes popin { from { transform: scale(0.88); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  .result { display: none; text-align: center; padding: 3rem 1.5rem; background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); animation: fbin 0.3s ease; }
+  .result.show { display: block; }
+  .res-icon { font-size: 58px; margin-bottom: 1rem; }
+  .res-score { font-size: 36px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+  .res-msg { font-size: 15px; color: var(--text2); margin-bottom: 1.5rem; line-height: 1.6; }
+  .res-bar { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; max-width: 380px; margin: 0 auto 1.5rem; }
+  .res-dot { height: 10px; border-radius: 99px; }
+  .hit { background: #639922; }
+  .miss { background: #E24B4A; }
+  .restart { background: #7F77DD; color: white; border: none; border-radius: var(--radius-md); padding: 0.7rem 2rem; font-size: 15px; cursor: pointer; font-weight: 500; font-family: inherit; }
+  .restart:hover { opacity: 0.85; }
+
+  .confetti-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 999; }
+  .confetto { position: absolute; border-radius: 2px; animation: fall linear forwards; }
+  @keyframes fall { 0% { transform: translateY(-20px) rotate(0deg); opacity: 1; } 100% { transform: translateY(110vh) rotate(720deg); opacity: 0; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="hdr">
+  <div>
+    <h1>ICD-10-CM Chapter 2 — Neoplasm Coding</h1>
+    <div class="sub">CPC Exam Prep · 10 High-Difficulty Questions</div>
+  </div>
+  <div class="badges">
+    <div class="badge badge-streak" id="streak-b">Streak: 0</div>
+    <div class="badge badge-score" id="score-b">0 / 0</div>
+  </div>
+</div>
+
+<button class="ref-toggle" id="ref-btn" onclick="toggleRef()">Show code reference table</button>
+<div class="ref-section" id="ref-section">
+  <table class="ref">
+    <thead><tr><th style="width:100px">Code</th><th style="width:140px">Category</th><th>Full description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="cp cp-pu">C80.0</span></td><td>Disseminated malignancy</td><td>Disseminated malignant neoplasm, unspecified — used when a patient has advanced metastatic disease with no identifiable primary or secondary site specified. Typically end-stage, terminal documentation.</td></tr>
+      <tr><td><span class="cp cp-pk">C80.1</span></td><td>Unknown primary</td><td>Malignant neoplasm, unspecified — used when the primary site is completely unknown AND at least a secondary/metastatic site is known. Do not use when both primary and secondary are unspecified.</td></tr>
+      <tr><td><span class="cp cp-tl">C77–C79</span></td><td>Secondary / metastatic</td><td>Secondary malignant neoplasm codes by specific organ (e.g., C78.7 liver, C79.51 bone, C78.01 right lung). Represents cancer spread from a primary site. Sequenced first when primary is unknown.</td></tr>
+      <tr><td><span class="cp cp-am">G89.3</span></td><td>Neoplasm-related pain</td><td>Neoplasm-related pain (acute or chronic). Principal code only when the encounter is specifically for pain management. The neoplasm code follows as additional. Not used when neoplasm management is the reason.</td></tr>
+      <tr><td><span class="cp cp-co">O9A.1–</span></td><td>Pregnancy + malignancy</td><td>Malignant neoplasm complicating pregnancy, childbirth, and the puerperium. Per Chapter 15 rules, the pregnancy complication code is sequenced AFTER the neoplasm code — not before, despite obstetric coding priority in other contexts.</td></tr>
+      <tr><td><span class="cp cp-bl">Z85.–</span></td><td>Personal history</td><td>Personal history of malignant neoplasm. Used only when cancer has been completely excised with no evidence of recurrence or extension. Cannot be used when cancer is currently active.</td></tr>
+      <tr><td><span class="cp cp-pu">M84.5–</span></td><td>Pathologic fracture</td><td>Pathologic fracture in neoplastic disease. Sequenced first when the fracture itself is the focus of treatment. The underlying neoplasm is an additional code. When the neoplasm is the focus, neoplasm code leads instead.</td></tr>
+      <tr><td><span class="cp cp-pk">Z51.0</span></td><td>Radiation therapy</td><td>Encounter for antineoplastic radiation therapy. The neoplasm code follows as additional. Do not assign as principal unless radiation is the sole documented reason for the encounter.</td></tr>
+      <tr><td><span class="cp cp-tl">Z51.11</span></td><td>Chemotherapy</td><td>Encounter for antineoplastic chemotherapy. Neoplasm is coded additionally. Distinct from Z51.12 (immunotherapy) — commonly tested together to catch students who conflate the two.</td></tr>
+      <tr><td><span class="cp cp-am">Z51.12</span></td><td>Immunotherapy</td><td>Encounter for antineoplastic immunotherapy. Separate code from chemotherapy. Biologic agents, checkpoint inhibitors, and CAR-T therapies fall here — not Z51.11.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="prog-bar"><div class="prog-fill" id="prog" style="width:0%"></div></div>
+
+<div id="qarea">
+  <div class="q-card">
+    <div class="q-meta">
+      <span class="q-num" id="qnum">Question 1 of 10</span>
+      <span class="q-diff diff-hard" id="qdiff">Hard</span>
+    </div>
+    <div class="q-scenario" id="qscenario"></div>
+    <div class="q-text" id="qtext"></div>
+  </div>
+  <div class="opts" id="opts"></div>
+  <div class="fb" id="fb"></div>
+  <div class="nav-row">
+    <span class="scr-tag" id="scr-tag">Score: 0 / 0</span>
+    <button class="nxt" id="nxt-btn">Next question →</button>
+  </div>
+</div>
+
+<div class="result" id="result">
+  <div class="res-icon" id="res-icon">🏆</div>
+  <div class="res-score" id="res-score"></div>
+  <div class="res-msg" id="res-msg"></div>
+  <div class="res-bar" id="res-bar"></div>
+  <button class="restart" onclick="restart()">Retake quiz</button>
+</div>
+
+</div>
+<div class="confetti-wrap" id="cw"></div>
+
+<script>
+const Qs = [
+  {
+    diff:"Hard",
+    scenario:"A 68-year-old female is admitted to an acute care hospital. Imaging confirms widespread hepatic lesions and bilateral lung nodules consistent with metastatic malignancy. After extensive workup including CT-guided biopsy, PET scan, tumor marker panels, and colonoscopy, the pathology team is unable to determine the original site of the cancer. The encounter is specifically to manage the metastatic disease.",
+    text:"Which codes should be assigned, and in what sequence, for this encounter?",
+    opts:[
+      "Assign C80.1 only — primary unknown covers everything and no additional code is needed",
+      "Assign the secondary site codes first (C78.7 liver, C78.01 lung), then C80.1 as an additional code",
+      "Assign C80.0 because metastatic involvement of multiple organs constitutes disseminated disease",
+      "Assign Z85.– because a personal history code applies when no primary is documented"
+    ],
+    ans:1,
+    fb:"<strong>Correct: secondary site codes first, then C80.1.</strong> Per ICD-10-CM guidelines, when the primary site is unknown at a metastatic encounter, the secondary/metastatic site codes (C77–C79) are listed first, followed by C80.1. C80.0 is reserved for truly disseminated disease with NO specific site documented anywhere. Here, liver and lung are specified, so C78.7 and C78.01 apply. Z85.– requires confirmed eradication — this patient has active disease."
+  },
+  {
+    diff:"Hard",
+    scenario:"A 32-year-old woman at 22 weeks gestation presents with a newly diagnosed stage II breast cancer confirmed by core needle biopsy. No metastatic involvement is found. The encounter is for initial evaluation and treatment planning of the malignancy. No other obstetric complications are documented in the record.",
+    text:"Which code is sequenced FIRST for this encounter, and what follows it?",
+    opts:[
+      "C50.911 (breast cancer, unspecified site) is sequenced first; O9A.111 follows as a complication code",
+      "O9A.111 (malignant neoplasm complicating pregnancy, second trimester) is sequenced first; C50.911 follows",
+      "Z34.22 (supervision of normal 22-week pregnancy) is listed first; then the neoplasm code",
+      "G89.3 (neoplasm-related pain) is principal because pain management in pregnancy always takes priority"
+    ],
+    ans:1,
+    fb:"<strong>O9A.111 is sequenced FIRST.</strong> Despite the general rule that Chapter 15 obstetric codes lead, the specific guideline for malignant neoplasms complicating pregnancy states: code the NEOPLASM first, then the pregnancy complication code (O9A.1–). This is one of the most-tested sequencing exceptions. The distractor making C50.911 first is tempting — but the guideline is explicit: neoplasm code leads, O9A.1– follows."
+  },
+  {
+    diff:"Hard",
+    scenario:"A 55-year-old male with known non-small cell lung cancer (C34.11) develops severe hypercalcemia of malignancy requiring IV bisphosphonate therapy and aggressive fluid resuscitation. Hypercalcemia is the primary reason for this inpatient admission. Oncology was consulted but the lung cancer received no specific treatment intervention during this stay.",
+    text:"How should the codes be sequenced for this inpatient admission?",
+    opts:[
+      "C34.11 (lung cancer) first — it caused the hypercalcemia, making it the root principal diagnosis",
+      "E83.52 (hypercalcemia) first as principal, then C34.11 (lung cancer) as an additional diagnosis",
+      "Z51.11 first because bisphosphonates are considered a form of chemotherapy for bone metastasis",
+      "C80.1 first because active treatment of a complication implies the primary is no longer the focus"
+    ],
+    ans:1,
+    fb:"<strong>The complication (E83.52) is sequenced first.</strong> When a complication associated with a neoplasm is the focus of treatment, the complication is listed first regardless of causation. The neoplasm (C34.11) is coded additionally. Bisphosphonates are NOT chemotherapy — they are antiresorptive agents. Z51.11 does not apply. Root cause does not equal principal diagnosis — treatment focus does."
+  },
+  {
+    diff:"Hard",
+    scenario:"A patient with recurrent sigmoid colon cancer undergoes surgical resection. Post-operatively on day 2, an anastomotic leak is confirmed requiring emergent re-operation and washout. The anastomotic leak was caused by the surgical procedure, not by tumor infiltration. No radiation or chemotherapy was administered during this hospitalization.",
+    text:"For the anastomotic leak encounter, what is the correct code sequencing?",
+    opts:[
+      "C18.7 (sigmoid colon cancer) first; then the surgical complication code as secondary",
+      "The surgical complication code (T81.33XA) first as principal; then C18.7 as additional",
+      "Z51.0 first because post-surgical radiation planning was discussed at the time of discharge",
+      "C80.0 because the recurrence status suggests metastatic dissemination is likely present"
+    ],
+    ans:1,
+    fb:"<strong>The surgical complication code leads.</strong> When a complication arises from a procedure performed to treat a neoplasm, the complication code (T81.33XA for disruption of external operation wound, or similar) is the principal diagnosis. The neoplasm (C18.7) is coded additionally. Discussing future radiation does not trigger Z51.0 — the treatment must actually be administered. Root cause versus treatment focus: the complication is what's being treated."
+  },
+  {
+    diff:"Hard",
+    scenario:"A 72-year-old male with metastatic prostate cancer to the lumbar spine develops a pathologic fracture of L3 (M84.552A). He is admitted to orthopedics where the fracture is surgically stabilized with vertebroplasty. Oncology is consulted but does not intervene during this admission. Post-operative pain management is provided as part of the fracture care protocol.",
+    text:"What is the correct principal diagnosis code for this admission?",
+    opts:[
+      "C61 (prostate cancer) — the cancer caused the fracture and therefore drives the encounter",
+      "M84.552A (pathologic fracture of lumbar vertebra in neoplastic disease) — fracture is the treatment focus",
+      "G89.3 (neoplasm-related pain) — pain management is the dominant billable service rendered",
+      "C79.51 (secondary malignant neoplasm of bone) — the metastasis to bone is the underlying mechanism"
+    ],
+    ans:1,
+    fb:"<strong>M84.552A is the principal code</strong> because the fracture is the focus of treatment. Per guidelines, when the pathologic fracture drives the encounter (surgical stabilization here), M84.5– leads and the neoplasm code (C61) follows. G89.3 applies only when pain management is the explicit and sole encounter purpose — surgical fracture repair goes well beyond pain management. C79.51 would be additional alongside C61."
+  },
+  {
+    diff:"Medium",
+    scenario:"Same patient — one month later. The L3 fracture has healed and the patient returns to his oncologist. The visit note documents: 'Encounter for management of advanced prostate cancer. Evaluating disease progression and initiating new hormonal therapy regimen. Fracture confirmed healed — no longer an active clinical concern.' No fracture-related treatment is performed.",
+    text:"What is sequenced FIRST, and how does M84.552D factor into this new encounter?",
+    opts:[
+      "M84.552D (pathologic fracture, subsequent encounter) must still be listed first for continuity of care",
+      "C61 (prostate cancer) is principal; the healed fracture is not coded unless documented as ongoing",
+      "G89.3 is principal because cancer-related pain is implied in all prostate cancer management encounters",
+      "Z85.46 (personal history of prostate cancer) is used because the fracture healed, implying cancer resolution"
+    ],
+    ans:1,
+    fb:"<strong>C61 is now the principal code.</strong> When the encounter is for managing the neoplasm itself — progression evaluation, treatment planning — the neoplasm code leads. A healed fracture is not coded unless explicitly documented as an active ongoing clinical problem. Z85.– applies only when the cancer itself is resolved with no recurrence — this patient still has active prostate cancer. Discussing hormonal therapy does not trigger Z51.12 unless the therapy is actually administered."
+  },
+  {
+    diff:"Hard",
+    scenario:"A patient with stage III ovarian cancer (C56.1) is admitted for elective surgical debulking (cytoreductive surgery). The following day, while still inpatient, carboplatin and paclitaxel chemotherapy is initiated. The admission was arranged specifically for the surgical procedure. Chemotherapy was a planned secondary event during the same inpatient stay.",
+    text:"How should codes be assigned and sequenced for this single inpatient episode of care?",
+    opts:[
+      "Z51.11 (chemotherapy encounter) is principal because chemo was administered and takes sequencing priority",
+      "C56.1 (ovarian cancer) is principal; Z51.11 (chemotherapy) is additional",
+      "The surgical removal code is the principal diagnosis; C56.1 and Z51.11 are both additional",
+      "O9A.1– is listed first because ovarian cancer in a reproductive-age female implies possible pregnancy risk"
+    ],
+    ans:2,
+    fb:"<strong>The surgical removal code is the principal diagnosis.</strong> When surgery for neoplasm removal and subsequent chemotherapy/radiation occur in the same episode, the surgical procedure code is the principal. The neoplasm (C56.1) and the chemotherapy code (Z51.11) are both coded additionally. The admission was arranged for surgery — that defines the principal diagnosis even when chemo follows. O9A.1– only applies when pregnancy is confirmed."
+  },
+  {
+    diff:"Hard",
+    scenario:"A 61-year-old patient presents with no documented primary or secondary tumor site. The provider documents: 'Advanced metastatic disease, all sites unspecified. Terminal presentation with malignancy spread throughout multiple organ systems.' No individual organs are specified anywhere in the chart. The patient is enrolled in hospice.",
+    text:"Which single ICD-10-CM code most accurately captures this entire scenario?",
+    opts:[
+      "C80.1 — malignant neoplasm, unspecified — applies when primary site is unknown",
+      "C80.0 — disseminated malignant neoplasm, unspecified — applies when both primary and secondary are unspecified",
+      "C77.9 — secondary malignant neoplasm of lymph node, unspecified — covers multi-system spread",
+      "Z85.9 — personal history of malignant neoplasm — applies when the terminal stage implies near-resolution"
+    ],
+    ans:1,
+    fb:"<strong>C80.0 is correct</strong> for disseminated disease with no specific site documented. C80.0 captures 'cancer everywhere, no site specified' — the hallmark of this code. C80.1 requires that at least the metastatic site is known. C77.9 implies lymph nodes are the secondary site — that's not documented here. Z85.9 is completely wrong — this patient has active terminal cancer, not resolved disease. Hospice enrollment does not change active disease coding."
+  },
+  {
+    diff:"Hard",
+    scenario:"A 58-year-old male with known pancreatic adenocarcinoma (C25.1) presents to a pain management clinic. He rates abdominal and back pain at 9/10. The encounter note explicitly states: 'Encounter specifically for pain management secondary to pancreatic malignancy. No new chemotherapy or surgical intervention planned today.' A fentanyl patch regimen is titrated upward.",
+    text:"What is the correct code sequencing for this pain management encounter?",
+    opts:[
+      "C25.1 (pancreatic cancer) first — it is the underlying cause of all the pain and drives the encounter",
+      "G89.3 (neoplasm-related pain) first as principal; C25.1 (pancreatic cancer) as an additional code",
+      "Z51.11 first because fentanyl titration is classified as adjunct antineoplastic therapy",
+      "C80.1 first because intractable chronic pain often signals an unknown primary has emerged"
+    ],
+    ans:1,
+    fb:"<strong>G89.3 is the principal code</strong> for pain management encounters related to a neoplasm. Per ICD-10-CM Section I.C.6.b: when the reason for the encounter is pain management (not neoplasm management), G89.3 leads and the neoplasm code (C25.1) is additional. Fentanyl titration is opioid pain management — it is NOT chemotherapy. Z51.11 does not apply. Chronic intractable pain does not trigger C80.1."
+  },
+  {
+    diff:"Medium",
+    scenario:"Same patient — one week later. He returns to his oncologist. The visit note states: 'Encounter for management of advanced pancreatic cancer. Evaluating disease progression. Patient continues to have cancer-related pain, but the primary focus today is assessment of second-line chemotherapy options. No chemotherapy administered today.'",
+    text:"How does G89.3 factor into code sequencing for this new encounter compared to last week's visit?",
+    opts:[
+      "G89.3 is still principal — pain was documented so it always takes sequencing priority over the neoplasm",
+      "C25.1 is principal; G89.3 is reported as an additional code because pain is an active but secondary issue",
+      "Z51.11 is principal because discussing chemotherapy options is equivalent to initiating treatment",
+      "G89.3 and C25.1 carry equal weight and may be sequenced in either order for this encounter"
+    ],
+    ans:1,
+    fb:"<strong>C25.1 is principal; G89.3 is additional.</strong> When the encounter is for neoplasm management — disease evaluation, progression assessment, treatment planning — the neoplasm code leads. G89.3 may still be coded as additional when pain is documented as an active issue, but it does not claim the principal position unless the visit is specifically and solely for pain management. Discussing future chemo options does NOT trigger Z51.11 — chemo must be administered. Sequencing is not interchangeable."
+  }
+];
+
+let cur=0, score=0, answered=0, streak=0, history=[], ac=false;
+
+function render() {
+  const q = Qs[cur]; ac = false;
+  document.getElementById("qnum").textContent = `Question ${cur + 1} of ${Qs.length}`;
+  const diff = document.getElementById("qdiff");
+  diff.textContent = q.diff;
+  diff.className = "q-diff " + (q.diff === "Hard" ? "diff-hard" : q.diff === "Medium" ? "diff-med" : "diff-easy");
+  document.getElementById("qscenario").textContent = q.scenario;
+  document.getElementById("qtext").textContent = q.text;
+  const opts = document.getElementById("opts");
+  opts.innerHTML = "";
+  q.opts.forEach((o, i) => {
+    const b = document.createElement("button");
+    b.className = "opt";
+    b.innerHTML = `<span class="opt-key">${["A","B","C","D"][i]}</span><span>${o}</span>`;
+    b.onclick = () => pick(i);
+    opts.appendChild(b);
+  });
+  document.getElementById("fb").className = "fb";
+  document.getElementById("fb").innerHTML = "";
+  document.getElementById("nxt-btn").className = "nxt";
+  document.getElementById("prog").style.width = (cur / Qs.length * 100) + "%";
+  document.getElementById("scr-tag").textContent = `Score: ${score} / ${answered}`;
+  document.getElementById("streak-b").textContent = `Streak: ${streak}${streak >= 3 ? " 🔥" : ""}`;
+  document.getElementById("score-b").textContent = `${score} / ${answered}`;
+}
+
+function pick(idx) {
+  if (ac) return; ac = true;
+  const q = Qs[cur];
+  document.querySelectorAll(".opt").forEach((b, i) => {
+    b.classList.add("disabled");
+    if (i === q.ans) b.classList.add("correct");
+    else if (i === idx && i !== q.ans) b.classList.add("wrong");
+  });
+  answered++;
+  const ok = idx === q.ans;
+  history.push(ok);
+  if (ok) { score++; streak++; snd("ok"); if (streak >= 3) burst(22); else burst(9); }
+  else { streak = 0; snd("no"); }
+  const fb = document.getElementById("fb");
+  fb.innerHTML = q.fb;
+  fb.className = "fb show " + (ok ? "fb-correct" : "fb-wrong");
+  document.getElementById("nxt-btn").className = "nxt show";
+  document.getElementById("scr-tag").textContent = `Score: ${score} / ${answered}`;
+  document.getElementById("streak-b").textContent = `Streak: ${streak}${streak >= 3 ? " 🔥" : ""}`;
+  document.getElementById("score-b").textContent = `${score} / ${answered}`;
+}
+
+document.getElementById("nxt-btn").onclick = () => { cur++; cur >= Qs.length ? showResult() : render(); };
+
+function showResult() {
+  document.getElementById("qarea").style.display = "none";
+  document.getElementById("result").className = "result show";
+  const pct = Math.round(score / Qs.length * 100);
+  document.getElementById("res-score").textContent = `${score} / ${Qs.length}  —  ${pct}%`;
+  let icon = "💪", msg = "";
+  if (pct === 100) { icon = "🏆"; msg = "Flawless! You have mastered neoplasm coding sequencing. Exam-ready."; }
+  else if (pct >= 80) { icon = "🎉"; msg = "Excellent — review any missed rationales and you are set for the exam."; }
+  else if (pct >= 60) { icon = "📚"; msg = "Good foundation. Focus on sequencing rules for complications, pain, and fractures."; }
+  else { icon = "🌱"; msg = "Keep going — study the code reference table and sequencing hierarchy carefully."; }
+  document.getElementById("res-icon").textContent = icon;
+  document.getElementById("res-msg").textContent = msg;
+  document.getElementById("prog").style.width = "100%";
+  const bar = document.getElementById("res-bar");
+  bar.innerHTML = "";
+  history.forEach(h => { const d = document.createElement("div"); d.className = "res-dot " + (h ? "hit" : "miss"); bar.appendChild(d); });
+  if (pct >= 80) for (let j = 0; j < 5; j++) setTimeout(() => burst(24), j * 380);
+  snd("win");
+}
+
+function restart() {
+  cur = 0; score = 0; answered = 0; streak = 0; history = [];
+  document.getElementById("qarea").style.display = "block";
+  document.getElementById("result").className = "result";
+  render();
+}
+
+function toggleRef() {
+  const t = document.getElementById("ref-section");
+  const b = document.getElementById("ref-btn");
+  const open = t.classList.toggle("open");
+  b.textContent = open ? "Hide code reference table" : "Show code reference table";
+}
+
+function snd(t) {
+  try {
+    const c = new (window.AudioContext || window.webkitAudioContext)();
+    const o = c.createOscillator(), g = c.createGain();
+    o.connect(g); g.connect(c.destination);
+    g.gain.setValueAtTime(0.13, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.55);
+    if (t === "ok") { o.type = "sine"; o.frequency.setValueAtTime(523, c.currentTime); o.frequency.setValueAtTime(659, c.currentTime + 0.12); o.frequency.setValueAtTime(784, c.currentTime + 0.24); }
+    else if (t === "no") { o.type = "sawtooth"; o.frequency.setValueAtTime(280, c.currentTime); o.frequency.setValueAtTime(160, c.currentTime + 0.2); }
+    else { o.type = "sine"; o.frequency.setValueAtTime(440, c.currentTime); o.frequency.setValueAtTime(554, c.currentTime + 0.1); o.frequency.setValueAtTime(659, c.currentTime + 0.2); o.frequency.setValueAtTime(880, c.currentTime + 0.38); }
+    o.start(c.currentTime); o.stop(c.currentTime + 0.6);
+  } catch(e) {}
+}
+
+function burst(n) {
+  const w = document.getElementById("cw");
+  const cols = ["#7F77DD","#1D9E75","#EF9F27","#D4537E","#378ADD","#E24B4A","#9FE1CB","#F4C0D1","#FAC775"];
+  for (let i = 0; i < n; i++) {
+    const el = document.createElement("div");
+    el.className = "confetto";
+    el.style.left = (5 + Math.random() * 90) + "%";
+    el.style.top = "-14px";
+    el.style.background = cols[Math.floor(Math.random() * cols.length)];
+    const s = 6 + Math.random() * 10; el.style.width = s + "px"; el.style.height = s + "px";
+    el.style.borderRadius = Math.random() > 0.5 ? "50%" : "2px";
+    el.style.animationDuration = (1.2 + Math.random() * 1.5) + "s";
+    el.style.animationDelay = (Math.random() * 0.5) + "s";
+    w.appendChild(el);
+    setTimeout(() => el.remove(), 3200);
+  }
+}
+
+render();
+</script>
+</body>
+</html>
